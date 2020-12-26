@@ -1,0 +1,731 @@
+openapi: 3.0.0
+info:
+  title: diff-problem-server-api
+  version: 1.0.0
+  description: This is the api document of [diff-problem-server](https://github.com/thusaac-spg/diff-problem-server)
+servers:
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/shanjb0221/diff/1.0.0
+  - description: diff-problem-server hosted by ZhiliOJ
+    url: http://124.70.91.98:2333/api
+tags:
+  - name: user
+  - name: problem
+  - name: submission
+paths:
+  /user:
+    post:
+      summary: register
+      operationId: registerAPI
+      tags:
+        - user
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/RegisterForm'
+      responses:
+        '201':
+          description: created
+          headers:
+            'Identity':
+              schema:
+                type: number
+        '406':
+          description: loss-information
+        '422':
+          description: password-invalid
+        '409':
+          description: email-conflict
+        '500':
+          description: server-error
+    get:
+      summary: fetch profile
+      operationId: fetchProfileAPI
+      tags:
+        - user
+      security:
+        - Bearer: []
+      responses:
+        '200':
+          description: success
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/PrivateProfile'
+        '401':
+          description: token-invalid
+        '500':
+          description: 500-turn-to-admin
+    put:
+      summary: update profile
+      operationId: updateProfileAPI
+      tags:
+        - user
+      security:
+        - Bearer: []
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/UpdateProfileForm'
+      responses:
+        '204':
+          description: success
+        '401':
+          description: token-invalid
+        '500':
+          description: 500-turn-to-admin
+  /user/login:
+    post:
+      summary: login
+      operationId: loginAPI
+      tags:
+        - user
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/LoginForm'
+      responses:
+        '200':
+          description: success
+          content:
+            'text/plain':
+              schema:
+                type: string
+        '406':
+          description: loss-information
+        '403':
+          description: invalid-credentials
+        '500':
+          description: 500-turn-to-admin
+  /user/token:
+    get:
+      summary: refresh token
+      operationId: refreshTokenAPI
+      tags:
+        - user
+      security:
+        - Bearer: []
+      responses:
+        '200':
+          description: success
+          content:
+            'text/plain':
+              schema:
+                type: string
+        '401':
+          description: token-invalid
+        '500':
+          description: 500-turn-to-admin
+  /problem:
+    post:
+      summary: create problem
+      operationId: createProblemAPI
+      tags:
+        - problem
+      security:
+        - Bearer: []
+      requestBody:
+        content: {}
+      responses:
+        '201':
+          description: created
+          headers:
+            'Identity':
+              schema:
+                type: number
+            'Alias':
+              schema:
+                type: number
+        '401':
+          description: token-invalid
+        '409':
+          description: info-conflict
+        '500':
+          description: server-error
+    get:
+      summary: get all problem
+      operationId: getAllProblemAPI
+      tags:
+        - problem
+      security:
+        - Bearer: []
+      responses:
+        '200':
+          description: success
+          content:
+            'application/json':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BriefProblemModel'
+        '401':
+          description: token-invalid
+        '500':
+          description: server-error
+  /problem/{_id}:
+    put:
+      summary: update problem
+      operationId: updateProblemAPI
+      tags:
+        - problem
+      parameters:
+        - $ref: '#/components/parameters/ID'
+      security:
+        - Bearer: []
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/ProblemUpdateForm'
+      responses:
+        '204':
+           description: success
+        '401':
+          description: token-invalid
+        '404':
+          description: problem-not-found
+        '409':
+          description: info-conflict
+        '500':
+          description: server-error
+    get:
+      summary: get problem
+      operationId: getProblemAPI
+      tags:
+        - problem
+      parameters:
+        - $ref: '#/components/parameters/ID'
+      security:
+        - Bearer: []
+      responses:
+        '200':
+          description: success
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/ProblemModel'
+        '401':
+          description: token-invalid
+        '404':
+          description: problem-not-found
+        '500':
+          description: server-error
+  /problem/my/problems:
+    get:
+      summary: get self problem
+      operationId: getSelfProblemAPI
+      tags:
+        - problem
+      security:
+        - Bearer: []
+      responses:
+        '200':
+          description: success
+          content:
+            'application/json':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BriefProblemModel'
+        '401':
+          description: token-invalid
+        '500':
+          description: server-error
+  /problem/{_id}/statement:
+    get:
+      summary: get problem statement
+      operationId: getProblemStatementAPI
+      tags:
+        - problem
+      parameters:
+        - $ref: '#/components/parameters/ID'
+      security:
+        - Bearer: []
+      responses:
+        '200':
+          description: success
+          content:
+            'text/plain':
+              schema:
+                type: string
+        '401':
+          description: token-invalid
+        '500':
+          description: server-error
+  /problem/{_id}/config:
+    put:
+      summary: update problem config
+      operationId: updateProblemConfigAPI
+      tags:
+        - problem
+      parameters:
+        - $ref: '#/components/parameters/ID'
+      security:
+        - Bearer: []
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/ProblemConfigModel'
+      responses:
+        '204':
+          description: created
+        '401':
+          description: token-invalid
+        '404':
+          description: problem-not-found
+        '500':
+          description: server-error
+  /problem/{_id}/token:
+    get:
+      summary: get problem upload token
+      operationId: getProblemUploadToken
+      tags:
+        - problem
+      parameters:
+        - $ref: '#/components/parameters/ID'
+      security:
+        - Bearer: []
+      responses:
+        '200':
+          description: success
+          content:
+            'application/json':
+              schema:
+                type: object
+                additionalProperties: {}
+        '401':
+          description: token-invalid
+        '404':
+          description: problem-not-found
+        '500':
+          description: server-error
+  /problem/{_id}/submission:
+    post:
+      summary: submit problem
+      operationId: SubmitProblem
+      tags:
+        - problem
+        - submission
+      parameters:
+        - $ref: '#/components/parameters/ID'
+      security:
+        - Bearer: []
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              type: object
+              properties:
+                solution:
+                  type: string
+                language:
+                  type: string
+      responses:
+        '201':
+          description: created
+          headers:
+            'Identity':
+              schema:
+                type: number
+        '401':
+          description: token-invalid
+        '403':
+          description: language-not-valid
+        '406':
+          description: loss-information
+        '413':
+          description: solution-length-exceeded
+        '500':
+          description: server-error
+  /problem/cloud/settings:
+    get:
+      summary: get upload config 
+      operationId: getUploadConfig
+      tags:
+        - problem
+      security:
+        - Bearer: []
+      responses:
+        '200':
+          description: success
+          content:
+            'application/json':
+              schema:
+                type: object
+                properties:
+                  Region:
+                    type: string
+                  Bucket:
+                    type: string
+                  storagePrefix:
+                    type: string
+                  statementPrefix:
+                    type: string
+                  imagePrefix:
+                    type: string
+        '401':
+          description: token-invalid
+        '500':
+          description: server-error
+  /submission/self:
+    get:
+      summary: get self submission
+      operationId: getSelfSubmissionAPI
+      tags:
+        - submission
+      security:
+        - Bearer: []
+      responses:
+        '200':
+          description: success
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/SubmissionSummaryResult'
+        '401':
+          description: token-invalid
+        '500':
+          description: server-error
+  /submission/{submissionId}:
+    get:
+      summary: get submission
+      operationId: getSubmissionAPI
+      tags:
+        - submission
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: '#/components/parameters/SID'
+      responses:
+        '200':
+          description: success
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/SubmissionResult'
+        '401':
+          description: token-invalid
+        '404':
+          description: submission-not-found
+        '500':
+          description: server-error
+  /submission/problem/{problemId}:
+    get:
+      summary: get problem submissions
+      operationId: getProblemSubmissionsAPI
+      tags:
+        - problem
+        - submission
+      security:
+        - Bearer: []
+      parameters:
+        - $ref: '#/components/parameters/PID'
+      responses:
+        '200':
+          description: success
+          content:
+            'application/json':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubmissionSummaryResult'
+        '401':
+          description: token-invalid
+        '403':
+          description: not-allowed
+        '404':
+          description: problem-not-found
+        '500':
+          description: server-error
+components:
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    LoginForm:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+          format: password
+      required:
+        - email
+        - password
+    RegisterForm:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+          format: password
+        nickName:
+          type: string
+      required:
+        - email
+        - password
+        - nickName
+    PrivateProfile:
+      type: object
+      properties:
+        nickName:
+          type: string
+        school:
+          type: string
+        realName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+      required:
+        - nickName
+        - school
+        - realName
+        - phone
+        - email
+    UpdateProfileForm:
+      type: object
+      properties:
+        nickName:
+          type: string
+        school:
+          type: string
+        realName:
+          type: string
+        phone:
+          type: string
+        password:
+          type: string
+          format: password
+    TaskConfig:
+      oneOf:
+        - type: array
+          items:
+            type: number
+        - type: object
+          properties:
+            cases:
+              type: array
+              items:
+                type: number
+            score:
+              type: array
+              items:
+                type: number
+    ProblemConfigModel:
+      type: object
+      properties:
+        compile:
+          type: object
+          additionalProperties:
+            type: string
+        'compile dependencies':
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+        'runtime dependencies':
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+        spj:
+          type: string
+        tasks:
+          type: array
+          items:
+            type: string
+        'memory limit':
+          type: string
+        'time limit':
+          type: number
+        'max coding length':
+          type: number
+      additionalProperties:
+        oneOf:
+          - $ref: '#/components/schemas/TaskConfig'
+          - {}
+    BriefProblemModel:
+      type: object
+      properties:
+        _id:
+          type: number
+        name:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        isPublic:
+          type: boolean
+      required:
+        - _id
+        - name
+        - tags
+    ProblemModel:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/BriefProblemModel'
+      properties:
+        alias:
+          type: string
+        adminUsers:
+          type: array
+          items:
+            type: number
+        config:
+          $ref: '#/components/schemas/ProblemConfigModel'
+      required:
+        - alias
+        - config
+    ProblemUpdateForm:
+      type: object
+      properties:
+        alias:
+          type: string
+        name:
+          type: string
+        isPublic:
+          type: boolean
+        tags:
+          type: array
+          items:
+            type: string
+    SubmissionCompilationResult:
+      type: object
+      properties:
+        info:
+          type: string
+        status:
+          type: string
+      required:
+        - status
+    SubmissionSubtaskDetail:
+      type: object
+      properties:
+        info:
+          type: string
+        time:
+          type: string
+        memory:
+          type: string
+        status:
+          type: string
+      required:
+        - time
+        - memory
+        - status
+    SubmissionSubtaskResult:
+      type: object
+      properties:
+        info:
+          type: string
+        status:
+          type: string
+        score:
+          type: number
+      required:
+        - status
+        - score
+    SubmissionSummary:
+      type: object
+      properties:
+        score:
+          type: number
+        status:
+          type: string
+        task:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              score:
+                type: number
+              status:
+                type: string
+      required:
+        - score
+        - status
+        - task
+    SubmissionSummaryResult:
+      type: object
+      properties:
+        _id:
+          type: number
+        user:
+          type: number
+        problem:
+          type: number
+        status:
+          type: string
+        summary:
+          $ref: '#/components/schemas/SubmissionSummary'
+      required:
+        - _id
+        - user
+        - problem
+        - status
+        - summary
+    SubmissionResult:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/SubmissionSummaryResult'
+      properties:
+        tasks:
+          type: array
+          items:
+            type: string
+        compile:
+          $ref: '#/components/schemas/SubmissionCompilationResult'
+        results:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              $ref: '#/components/schemas/SubmissionSubtaskResult'
+        versionId:
+          type: string
+        language:
+          type: string
+        details:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              $ref: '#/components/schemas/SubmissionSubtaskDetail'
+      required:
+        - tasks
+        - compile
+        - results
+        - versionId
+        - language
+  parameters:
+    ID:
+      name: _id
+      in: path
+      schema:
+        type: number
+      required: true
+    SID:
+      name: submissionId
+      in: path
+      schema:
+        type: number
+      required: true
+    PID:
+      name: problemId
+      in: path
+      schema:
+        type: number
+      required: true
